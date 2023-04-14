@@ -1,6 +1,8 @@
 # DLL-Sideloading
 This project supports efforts to discover DLL sideloading (also known as 'DLL hijacking' or [T1574.001](https://attack.mitre.org/techniques/T1574/001/)/[T1574.002](https://attack.mitre.org/techniques/T1574/002/)) vulnerabilities where source code is unavailable and tools like [Process Monitor](https://learn.microsoft.com/en-us/sysinternals/downloads/procmon) aren't suitable.
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/87a88e7c399d4f478af49b64144bc807)](https://app.codacy.com/gh/michaellrowley/dll-sideloading/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 ## Overview:
 The repository currently contains two main components: a DLL that is injected into a process, and an executable that is responsible for launching and subsequently injecting into that process.
 
@@ -68,10 +70,10 @@ On my system, that SID (replaced with one from MSAPI docs in this example) refer
 ## Warning(s)
 This software comes with no warranty as to its suitbility for any purpose. However, using this on a non-virtualized system or in an attempt to get a 'dynamic persistence' effect (by injecting into a variety of running processes to gather a list of dynamic-loaded DLLs before dropping in some of the flagged locations) is advised against because:
 
-1. DLL Injection from the loader works by launching a new thread, allocating memory in another process, and indirectly triggering a kernel callback via [LoadLibraryW](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryw) which calls - among others - [PsSetLoadImageNotifyRoutine](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-pssetloadimagenotifyroutine) which is registered by just about every security product in kernel-mode. Each of these **can easily be detected by security products**.
-2. The source code **hasn't been inspected for security vulnerabilities** and could lead to additional issues arising (hence, try to run this in an isolated environment).
-3. Both **components need to be compiled for the architecture of the process being tested** (it *should* be possible to get the launcher to work with some effort as the only reason that this part fails to work is due to the resolution of the ``Kernel32.dll::LoadLibraryW`` address and ASLR makes hardcoding infeasible - enumerating over modules to find ``Kernel32.dll`` and then using a hardcoded/resolved offset to find ``LoadLibraryW`` should be possible, though).
-4. Pretty much every aspect of this project introduces undefined behaviour in the host process, meaning that **it could crash at any moment**.
+1.  DLL Injection from the loader works by launching a new thread, allocating memory in another process, and indirectly triggering a kernel callback via [LoadLibraryW](https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibraryw) which calls - among others - [PsSetLoadImageNotifyRoutine](https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntddk/nf-ntddk-pssetloadimagenotifyroutine) which is registered by just about every security product in kernel-mode. Each of these **can easily be detected by security products**.
+2.  The source code **hasn't been inspected for security vulnerabilities** and could lead to additional issues arising (hence, try to run this in an isolated environment).
+3.  Both **components need to be compiled for the architecture of the process being tested** (it *should* be possible to get the launcher to work with some effort as the only reason that this part fails to work is due to the resolution of the ``Kernel32.dll::LoadLibraryW`` address and ASLR makes hardcoding infeasible - enumerating over modules to find ``Kernel32.dll`` and then using a hardcoded/resolved offset to find ``LoadLibraryW`` should be possible, though).
+4.  Pretty much every aspect of this project introduces undefined behaviour in the host process, meaning that **it could crash at any moment**.
 
 TL;DR: This is only suitable for black-box testing in an (ideally) isolated environment.
 
